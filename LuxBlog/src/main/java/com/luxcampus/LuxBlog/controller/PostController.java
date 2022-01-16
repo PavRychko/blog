@@ -1,17 +1,41 @@
 package com.luxcampus.LuxBlog.controller;
 
 
+import com.luxcampus.LuxBlog.entity.Post;
+import com.luxcampus.LuxBlog.services.PostsService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import java.util.List;
 
 @RestController
 @RequestMapping(path = "api/v1/posts")
 public class PostController {
+    private final PostsService postsService;
+
+    @Autowired
+    public PostController(PostsService postsService) {
+        this.postsService = postsService;
+    }
 
     @GetMapping
-    public String hello(){
-        return "Hello";
+    public List<Post> getAllPosts() {
+        return postsService.getPosts();
     }
+
+    @PostMapping
+    public void addNewPost(@RequestBody Post post) {
+        postsService.addNewPost(post);
+    }
+
+    @PutMapping(path = "{id}")
+    public void updatePost(@PathVariable("id") Long id, @RequestBody Post updatedPost){
+        postsService.updatePost(id, updatedPost);
+    }
+
+    @DeleteMapping(path = "{id}")
+    public void deletePost(@PathVariable("id") Long id) {
+        postsService.deletePost(id);
+    }
+
 }
