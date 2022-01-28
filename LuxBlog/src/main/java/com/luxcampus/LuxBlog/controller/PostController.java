@@ -29,13 +29,13 @@ public class PostController {
     }
 
     @PutMapping(path = "{id}")
-    public void updatePost(@PathVariable("id") Long id, @RequestBody Post updatedPost){
-        postsService.updatePost(id, updatedPost);
+    public Post updatePost(@PathVariable("id") Long id, @RequestBody Post updatedPost){
+        return postsService.updatePost(id, updatedPost);
     }
 
     @DeleteMapping(path = "{id}")
-    public void deletePost(@PathVariable("id") Long id) {
-        postsService.deletePost(id);
+    public Post deletePost(@PathVariable("id") Long id) {
+        return postsService.deletePost(id);
     }
 
 }
