@@ -12,9 +12,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.List;
-import java.util.Optional;
-
+import java.util.*;
 
 
 import static org.mockito.Mockito.*;
@@ -31,43 +29,34 @@ class PostsServiceTest {
     private ObjectMapper objectMapper;
     private final String url = "http://localhost:8080/api/v1/posts";
     private final String urlForDeleteAndPut = url.concat("/{id}");
+    private final Post post = Post.builder()
+            .id(1L)
+            .title("something important")
+            .content("nothing special")
+            .build();
+    private final Post post2 = Post.builder()
+            .id(2L)
+            .title("nothing important")
+            .content("something special")
+            .build();
+    private final List<Post> expectedPosts = List.of(post, post2);
 
     @Test
-    void getAllPostsByUrlTest() {
-        Post post1 = Post.builder()
-                .id(1L)
-                .title("something important")
-                .content("nothing special")
-                .build();
-        Post post2 = Post.builder()
-                .id(2L)
-                .title("something not important")
-                .content("some special information")
-                .build();
-        List<Post> expectedPosts = List.of(post1, post2);
-
+    void getAllPostsByUrlTest() throws Exception {
         when(postRepository.findAll()).thenReturn(expectedPosts);
 
-        try {
-            mockmvc.perform(get(url))
-                    .andExpect(status().isOk())
-                    .andExpect(content().json(objectMapper.writeValueAsString(expectedPosts)));
+        mockmvc.perform(get(url))
+                .andExpect(status().isOk())
+                .andExpect(content().json(objectMapper.writeValueAsString(expectedPosts)));
 
 
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
     }
 
 
     @Test
     void addNewPostTest() {
         PostsService postService = new PostsService(postRepository);
-        Post post = Post.builder()
-                .id(1L)
-                .title("something important")
-                .content("nothing special")
-                .build();
+
         postService.addNewPost(post);
         verify(postRepository, times(1)).save(post);
 
@@ -77,29 +66,18 @@ class PostsServiceTest {
     @DisplayName("when delete post get status code 200 OK, and deleted post as Json")
     @Test
     void deletePostTest() throws Exception {
-        Post expectedPost = Post.builder()
-                .id(1L)
-                .title("something important")
-                .content("nothing special")
-                .build();
-
         when(postRepository.existsById(1L)).thenReturn(true);
-        when(postRepository.findById(1L)).thenReturn(Optional.of(expectedPost));
+        when(postRepository.findById(1L)).thenReturn(Optional.of(post));
 
-        mockmvc.perform(delete(urlForDeleteAndPut, expectedPost.getId()))
+        mockmvc.perform(delete(urlForDeleteAndPut, post.getId()))
                 .andExpect(status().isOk())
-                .andExpect(content().json(objectMapper.writeValueAsString(expectedPost)));
+                .andExpect(content().json(objectMapper.writeValueAsString(post)));
 
     }
 
     @DisplayName("when update post get status code 200 OK, and post before update as Json")
     @Test
     void updatePostTest() throws Exception {
-        Post expectedPost = Post.builder()
-                .id(1L)
-                .title("something important")
-                .content("nothing special")
-                .build();
         Post updatedPost = Post.builder()
                 .id(1L)
                 .title("nothing important")
@@ -107,13 +85,13 @@ class PostsServiceTest {
                 .build();
 
         when(postRepository.existsById(1L)).thenReturn(true);
-        when(postRepository.findById(1L)).thenReturn(Optional.of(expectedPost));
+        when(postRepository.findById(1L)).thenReturn(Optional.of(post));
 
-        mockmvc.perform(put(urlForDeleteAndPut, expectedPost.getId())
+        mockmvc.perform(put(urlForDeleteAndPut, post.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updatedPost)))
                 .andExpect(status().isOk())
-                .andExpect(content().json(objectMapper.writeValueAsString(expectedPost)));
+                .andExpect(content().json(objectMapper.writeValueAsString(post)));
     }
 
 
@@ -121,17 +99,6 @@ class PostsServiceTest {
     @Test
     void findPostByTitleTest() throws Exception {
         String title = "something important";
-        Post post1 = Post.builder()
-                .id(1L)
-                .title(title)
-                .content("nothing special")
-                .build();
-        Post post2 = Post.builder()
-                .id(2L)
-                .title(title)
-                .content("some special information")
-                .build();
-        List<Post> expectedPosts = List.of(post1, post2);
 
         when(postRepository.findAllByTitle(title)).thenReturn(expectedPosts);
 
@@ -144,26 +111,29 @@ class PostsServiceTest {
     @DisplayName("sort by title test")
     @Test
     void sortByTitleTest() throws Exception {
-        Post post = Post.builder()
-                .id(1L)
-                .title("something important")
-                .content("nothing special")
-                .build();
-        Post post2 = Post.builder()
-                .id(1L)
-                .title("nothing important")
-                .content("nothing special")
-                .build();
+        List<Post> expected = List.of(post2, post);
 
-        List<Post> expectedPosts = List.of(post2, post);
-
-        when(postRepository.findAll(Sort.by("title"))).thenReturn(expectedPosts);
+        when(postRepository.findAll(Sort.by("title"))).thenReturn(expected);
 
         mockmvc.perform(get(url).param("sort", "title"))
                 .andExpect(status().isOk())
-                .andExpect(content().json(objectMapper.writeValueAsString(expectedPosts)));
+                .andExpect(content().json(objectMapper.writeValueAsString(expected)));
 
 
     }
+
+    @Test
+    void getAllPostsWithStar() throws Exception {
+        String starUrl = url.concat("/star");
+        List<Post> starList = List.of(post);
+
+        when(postRepository.findByStar()).thenReturn(starList);
+
+        mockmvc.perform(get(starUrl))
+                .andExpect(status().isOk())
+                .andExpect(content().json(objectMapper.writeValueAsString(starList)));
+
+    }
+
 
 }

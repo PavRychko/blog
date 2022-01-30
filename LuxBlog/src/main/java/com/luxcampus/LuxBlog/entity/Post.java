@@ -28,6 +28,7 @@ public class Post {
     private Long id;
     private String title;
     private String content;
+    private boolean star;
 
     public Post(String title, String content) {
         this.title = title;
@@ -40,6 +41,7 @@ public class Post {
                 "id=" + id +
                 ", title='" + title + '\'' +
                 ", content='" + content + '\'' +
+                ", star='" + star + '\'' +
                 '}';
     }
 }

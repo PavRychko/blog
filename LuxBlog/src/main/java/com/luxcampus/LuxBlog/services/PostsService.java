@@ -59,12 +59,30 @@ public class PostsService {
     }
 
     public List<Post> findPostByTitle(String title) {
+        log.info("In Post Service findByTitle{}", title);
         return postRepository.findAllByTitle(title);
     }
 
     public List<Post> findPostsSortedByTitle(Sort by) {
-        List<Post> posts = postRepository.findAll(by);
-        return posts;
+        log.info("In Post Service sortedByTitle {}", by);
+        return postRepository.findAll(by);
+    }
 
+    public List<Post> findAllWithStar() {
+        log.info("In Post Service findAllWithStar");
+        return postRepository.findByStar();
+    }
+
+    @Transactional
+    public void setStarTrue(Long id) {
+        Post post = findById(id);
+        post.setStar(true);
+
+    }
+
+    @Transactional
+    public void deleteStar(Long id) {
+        Post post = findById(id);
+        post.setStar(false);
     }
 }

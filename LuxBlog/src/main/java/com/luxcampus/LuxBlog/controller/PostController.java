@@ -34,6 +34,10 @@ public class PostController {
         return posts;
     }
 
+    @GetMapping(path = "/star")
+    public List<Post> getAllPostsWithStar() {
+        return postsService.findAllWithStar();
+    }
 
     @PostMapping
     public void addNewPost(@RequestBody Post post) {
@@ -45,9 +49,19 @@ public class PostController {
         return postsService.updatePost(id, updatedPost);
     }
 
+    @PutMapping(path = "{id}/star")
+    public void setStarTrue(@PathVariable("id") Long id) {
+        postsService.setStarTrue(id);
+    }
+
     @DeleteMapping(path = "{id}")
     public Post deletePost(@PathVariable("id") Long id) {
         return postsService.deletePost(id);
+    }
+
+    @DeleteMapping(path = "{id}/star")
+    public void deleteStarFromPost(@PathVariable("id") Long id) {
+         postsService.deleteStar(id);
     }
 
 }
