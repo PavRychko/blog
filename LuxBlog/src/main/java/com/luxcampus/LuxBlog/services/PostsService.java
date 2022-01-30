@@ -4,11 +4,11 @@ import com.luxcampus.LuxBlog.entity.Post;
 import com.luxcampus.LuxBlog.repository.PostRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 
 import javax.transaction.Transactional;
 import java.util.List;
-
 
 
 @Controller
@@ -56,5 +56,15 @@ public class PostsService {
     Post findById(Long id) {
         log.info("In Post Service findById {}", id);
         return postRepository.findById(id).get();
+    }
+
+    public List<Post> findPostByTitle(String title) {
+        return postRepository.findAllByTitle(title);
+    }
+
+    public List<Post> findPostsSortedByTitle(Sort by) {
+        List<Post> posts = postRepository.findAll(by);
+        return posts;
+
     }
 }

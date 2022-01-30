@@ -4,9 +4,11 @@ package com.luxcampus.LuxBlog.controller;
 import com.luxcampus.LuxBlog.entity.Post;
 import com.luxcampus.LuxBlog.services.PostsService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Objects;
 
 @RestController
 @RequestMapping(path = "api/v1/posts")
@@ -19,9 +21,19 @@ public class PostController {
     }
 
     @GetMapping
-    public List<Post> getAllPosts() {
-        return postsService.getPosts();
+    public List<Post> getAllPosts(@RequestParam(required = false, value = "title") String title,
+                                  @RequestParam(required = false, value = "sort") String sorter) {
+        List<Post> posts;
+        if (title != null) {
+            posts = postsService.findPostByTitle(title);
+        } else if (sorter != null && Objects.equals(sorter, "title")) {
+            posts = postsService.findPostsSortedByTitle(Sort.by(sorter));
+        } else {
+            posts = postsService.getPosts();
+        }
+        return posts;
     }
+
 
     @PostMapping
     public void addNewPost(@RequestBody Post post) {
@@ -29,7 +41,7 @@ public class PostController {
     }
 
     @PutMapping(path = "{id}")
-    public Post updatePost(@PathVariable("id") Long id, @RequestBody Post updatedPost){
+    public Post updatePost(@PathVariable("id") Long id, @RequestBody Post updatedPost) {
         return postsService.updatePost(id, updatedPost);
     }
 
