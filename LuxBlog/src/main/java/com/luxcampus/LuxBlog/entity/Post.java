@@ -3,6 +3,8 @@ package com.luxcampus.LuxBlog.entity;
 import lombok.*;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table
@@ -29,6 +31,9 @@ public class Post {
     private String title;
     private String content;
     private boolean star;
+
+    @OneToMany(mappedBy = "post", orphanRemoval = true)
+    private List<Comment> comments = new ArrayList<>();
 
     public Post(String title, String content) {
         this.title = title;
