@@ -2,6 +2,7 @@ package com.luxcampus.LuxBlog.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.luxcampus.LuxBlog.entity.Post;
+import com.luxcampus.LuxBlog.repository.CommentRepository;
 import com.luxcampus.LuxBlog.repository.PostRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -15,16 +16,20 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.*;
 
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest
-class PostsServiceTest {
+class PostControllerToRepositoryFunctionalTest {
     @Autowired
     private MockMvc mockmvc;
     @MockBean
     private PostRepository postRepository;
+    @MockBean
+    private CommentRepository commentRepository;
     @Autowired
     private ObjectMapper objectMapper;
     private final String url = "http://localhost:8080/api/v1/posts";
@@ -41,6 +46,7 @@ class PostsServiceTest {
             .build();
     private final List<Post> expectedPosts = List.of(post, post2);
 
+    @DisplayName("get All posts by URL return 200 OK and list of posts")
     @Test
     void getAllPostsByUrlTest() throws Exception {
         when(postRepository.findAll()).thenReturn(expectedPosts);
@@ -52,18 +58,19 @@ class PostsServiceTest {
 
     }
 
-
+    @DisplayName("add new post, checked by verify method test")
     @Test
     void addNewPostTest() {
         PostsService postService = new PostsService(postRepository);
 
         postService.addNewPost(post);
+
         verify(postRepository, times(1)).save(post);
 
     }
 
 
-    @DisplayName("when delete post get status code 200 OK, and deleted post as Json")
+    @DisplayName("when delete post get status code 200 OK, and deleted post as Json test")
     @Test
     void deletePostTest() throws Exception {
         when(postRepository.existsById(1L)).thenReturn(true);
@@ -75,7 +82,7 @@ class PostsServiceTest {
 
     }
 
-    @DisplayName("when update post get status code 200 OK, and post before update as Json")
+    @DisplayName("when update post get status code 200 OK, and post before update as Json test")
     @Test
     void updatePostTest() throws Exception {
         Post updatedPost = Post.builder()
@@ -95,7 +102,7 @@ class PostsServiceTest {
     }
 
 
-    @DisplayName("find by title return 200 OK and list of Posts with required title")
+    @DisplayName("find by title return 200 OK and list of Posts with required title test")
     @Test
     void findPostByTitleTest() throws Exception {
         String title = "something important";
@@ -108,7 +115,7 @@ class PostsServiceTest {
 
     }
 
-    @DisplayName("sort by title test")
+    @DisplayName("sort by title return 200 OK and sorted list test")
     @Test
     void sortByTitleTest() throws Exception {
         List<Post> expected = List.of(post2, post);
@@ -122,6 +129,7 @@ class PostsServiceTest {
 
     }
 
+    @DisplayName("get all posts with star test")
     @Test
     void getAllPostsWithStar() throws Exception {
         String starUrl = url.concat("/star");
@@ -132,6 +140,35 @@ class PostsServiceTest {
         mockmvc.perform(get(starUrl))
                 .andExpect(status().isOk())
                 .andExpect(content().json(objectMapper.writeValueAsString(starList)));
+
+    }
+
+    @DisplayName("set star return 200 OK and star really set to post test")
+    @Test
+    void setStarTest() throws Exception {
+        String starUrl = urlForDeleteAndPut.concat("/star");
+
+        when(postRepository.findById(1L)).thenReturn(Optional.of(post));
+        mockmvc.perform(put(starUrl, 1L))
+                .andExpect(status().isOk());
+
+        assertTrue(post.isStar());
+
+    }
+
+    @DisplayName("delete star return 200 OK and star is really deleted test")
+    @Test
+    void deleteStarTest() throws Exception {
+        String starUrl = urlForDeleteAndPut.concat("/star");
+        post.setStar(true);
+
+        assertTrue(post.isStar());
+
+        when(postRepository.findById(1L)).thenReturn(Optional.of(post));
+        mockmvc.perform(delete(starUrl, 1L))
+                .andExpect(status().isOk());
+
+        assertFalse(post.isStar());
 
     }
 

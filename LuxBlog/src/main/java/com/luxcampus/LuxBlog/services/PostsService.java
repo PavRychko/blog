@@ -53,7 +53,7 @@ public class PostsService {
         return oldPost;
     }
 
-    Post findById(Long id) {
+    public Post findById(Long id) {
         log.info("In Post Service findById {}", id);
         return postRepository.findById(id).get();
     }

@@ -61,7 +61,7 @@ public class PostController {
 
     @DeleteMapping(path = "{id}/star")
     public void deleteStarFromPost(@PathVariable("id") Long id) {
-         postsService.deleteStar(id);
+        postsService.deleteStar(id);
     }
 
 }
