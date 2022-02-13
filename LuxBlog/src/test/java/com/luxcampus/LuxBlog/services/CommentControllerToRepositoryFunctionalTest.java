@@ -1,6 +1,8 @@
 package com.luxcampus.LuxBlog.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.luxcampus.LuxBlog.DTO.CommentDTO.CommentWithoutPostDTO;
+import com.luxcampus.LuxBlog.DTO.PostDTO.PostWithCommentDTO;
 import com.luxcampus.LuxBlog.entity.Comment;
 import com.luxcampus.LuxBlog.entity.Post;
 import com.luxcampus.LuxBlog.repository.CommentRepository;
@@ -12,10 +14,10 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -94,13 +96,14 @@ class CommentServiceTest {
     }
 
 
-    //ToDO: create DTO for Post entity with list of comments
+
     @Test
     void addNewCommentToPost() throws Exception {
         comment1.setPost(null);
         comment2.setPost(null);
         assertNull(post1.getComments());
-
+        List<Comment> commentList = new ArrayList<>();
+        post1.setComments(commentList);
         when(postRepository.findById(1L)).thenReturn(Optional.of(post1));
 
         mockmvc.perform(post(url, 1)
@@ -111,15 +114,13 @@ class CommentServiceTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(comment2)))
                 .andExpect(status().isOk());
+        PostWithCommentDTO post1DTO = new PostWithCommentDTO(post1);
+        CommentWithoutPostDTO comment1DTO = new CommentWithoutPostDTO(comment1);
+        CommentWithoutPostDTO comment2DTO = new CommentWithoutPostDTO(comment2);
 
-        verify(commentRepository, times(2));
-
-        assertNotNull(post1.getComments());
-        assertEquals(comment1, post1.getComments().get(1));
-        assertEquals(comment2, post1.getComments().get(2));
-        assertEquals(post1, comment1.getPost());
-        assertEquals(post1, comment2.getPost());
-
+        assertNotNull(post1DTO.getComments());
+        assertEquals(comment1DTO, post1DTO.getComments().get(0));
+        assertEquals(comment2DTO, post1DTO.getComments().get(1));
 
     }
 }
